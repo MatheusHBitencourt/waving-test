@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    container_name: waving-test
+    networks:
+      - main
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+    # REMOVE IN PRODUCTION
+    volumes:
+      - .:/usr/src/app
+      
+networks:
+  main:
+    external: true
+
