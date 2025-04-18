@@ -1,14 +1,18 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { HttpModule } from '@nestjs/axios';
-import { AppIntegration } from './app.integration';
-import { AppRepository } from './app.repository';
-import { PrismaService } from './prisma.service';
-
+import { ProductModule } from './product/product.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ShoppingCartModule } from './shopping-cart/shopping-cart.module';
+import { UserModule } from './user/user.module';
+import { OrderModule } from './order/order.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
-  imports: [HttpModule],
-  controllers: [AppController],
-  providers: [AppService, AppIntegration, AppRepository, PrismaService],
+  imports: [
+    PrismaModule,
+    ProductModule,
+    ShoppingCartModule,
+    UserModule,
+    OrderModule,
+    AuthModule,
+  ],
 })
 export class AppModule {}
