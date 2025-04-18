@@ -1,11 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider     = "prisma-client-js"
 }
 
 datasource db {
@@ -14,7 +8,98 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id        String    @id @default(uuid())
+  name      String    @map("name") @db.VarChar(100)
+  email     String    @unique @map("email") @db.VarChar(100)
+  address   String    @map("address") @db.VarChar(200)
+  password  String    @map("password") @db.VarChar(512)
+  isAdmin   Boolean   @default(false) @map("is_admin") @db.Boolean
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  shoppingCart ShoppingCart[]
+  Order        Order[]
+
+  @@map("user")
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String    @map("name") @db.VarChar(200)
+  code        Int       @unique @default(autoincrement()) @map("code")
+  price       Float     @default(0.00) @map("price") @db.DoublePrecision()
+  description String    @map("description") @db.Text()
+  image       String?   @map("image") @db.Text()
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+
+  productDetail ProductDetail[]
+  cartItem      CartItem[]
+
+  @@map("product")
+}
+
+model ProductDetail {
+  id         String  @id @default(uuid())
+  origin     String? @map("origin") @db.VarChar(100)
+  label      String? @map("label") @db.VarChar(200)
+  dimensions String? @map("dimension") @db.VarChar(100)
+  version    String? @map("version") @db.VarChar(100)
+  weight     String? @map("weight") @db.VarChar(10)
+  color      String? @map("color") @db.VarChar(100)
+  material   String? @map("material") @db.VarChar(100)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  product     Product @relation(fields: [productCode], references: [code], onDelete: Cascade)
+  productCode Int     @unique @map("product_code") @db.Integer
+
+  @@map("product_detail")
+}
+
+model ShoppingCart {
+  id        String     @id @default(uuid())
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime?  @updatedAt @map("updated_at")
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String     @unique @map("user_id") @db.VarChar()
+  cartItem  CartItem[]
+
+  @@map("shopping_cart")
+}
+
+model CartItem {
+  id             String       @id @default(uuid())
+  shoppingCart   ShoppingCart @relation(fields: [shoppingCartId], references: [id], onDelete: Cascade)
+  shoppingCartId String       @map("cart_id") @db.VarChar()
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId      String       @map("product_id") @db.VarChar()
+  quantity       Int          @default(1) @map("quantity") @db.Integer
+  unitPrice      Float        @map("unit_price") @db.DoublePrecision()
+  totalPrice     Float        @default(0.00) @map("total_price") @db.DoublePrecision()
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime?    @updatedAt @map("updated_at")
+
+  @@unique([shoppingCartId, productId])
+  @@map("cart_item")
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELED
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String      @map("user_id") @db.VarChar()
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime?   @updatedAt @map("updated_at")
+  items     Json        @map("items")
+  status    OrderStatus @default(PENDING)
+  total     Float       @default(0.00) @map("total") @db.DoublePrecision()
+
+  @@unique([userId, createdAt])
+  @@map("order")
 }
